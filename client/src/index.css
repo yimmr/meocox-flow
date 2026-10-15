@@ -1,0 +1,478 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: dark;
+}
+
+/* 全局划词选区深色高亮体验 (优雅科技靛蓝，对比清晰不刺眼) */
+::selection {
+  background-color: rgba(99, 102, 241, 0.4) !important;
+  color: #ffffff !important;
+}
+::-moz-selection {
+  background-color: rgba(99, 102, 241, 0.4) !important;
+  color: #ffffff !important;
+}
+
+/* 全局重置 Tailwind 预设的浅白/亮灰边框 (#e5e7eb)，全面统一为深色低饱和质感暗色线条 */
+*, ::before, ::after {
+  border-color: #1F2937 !important; /* dark-700 沉稳深色线条 */
+}
+
+/* 消除所有 markdown、hr 和分割线的泛白颜色 */
+hr {
+  border-color: #1F2937 !important;
+  opacity: 0.6;
+}
+
+/* 确保 Markdown 表格、代码块在左栏对话中自动换行、内部换行或包裹，杜绝引起外层水平滚动条 */
+.prose table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.prose pre {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.prose code {
+  word-break: break-all;
+}
+
+.prose p, .prose li {
+  word-break: break-word;
+}
+
+/* Conversation Markdown uses explicit typography because Tailwind Typography
+   is not part of this app's dependency set. */
+.chat-markdown {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.75;
+}
+.chat-markdown > :first-child { margin-top: 0; }
+.chat-markdown > :last-child { margin-bottom: 0; }
+.chat-markdown p { margin: 0.55rem 0; white-space: pre-wrap; }
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3,
+.chat-markdown h4 {
+  color: #f1f5f9;
+  font-weight: 650;
+  line-height: 1.4;
+  margin: 1rem 0 0.45rem;
+}
+.chat-markdown h1 { font-size: 1.35rem; }
+.chat-markdown h2 { font-size: 1.2rem; }
+.chat-markdown h3 { font-size: 1.08rem; }
+.chat-markdown h4 { font-size: 1rem; }
+.chat-markdown ul,
+.chat-markdown ol { margin: 0.55rem 0; padding-left: 1.6rem; }
+.chat-markdown ul { list-style: disc; }
+.chat-markdown ol { list-style: decimal; }
+.chat-markdown li { padding-left: 0.15rem; margin: 0.2rem 0; }
+
+/* ── 智能体工作流节点间流动炫彩光效 ── */
+@keyframes flowingStreamPulse {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 0% 200%;
+  }
+}
+
+.animate-flow-stream {
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.2) 0%, rgba(56, 189, 248, 0.9) 50%, rgba(168, 85, 247, 0.8) 100%);
+  background-size: 100% 200%;
+  animation: flowingStreamPulse 1.4s linear infinite;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* ── 智能体图标/头像呼吸发光动效 ── */
+@keyframes avatarBreatheGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 1px rgba(99, 102, 241, 0.4));
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    filter: drop-shadow(0 0 5px rgba(129, 140, 248, 0.9));
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+.animate-avatar-breathe {
+  animation: avatarBreatheGlow 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ── 跑马灯向上滑动顶部淡出遮罩 ── */
+.mask-ticker-fade-up {
+  mask-image: linear-gradient(to top, black 0%, black 65%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 65%, transparent 100%);
+}
+
+/* ── 思考信息块动态上下软边缘文本淡出遮罩 (Soft Edge Content Fade) ── */
+.mask-scroll-fade-top {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 22px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 22px, black 100%);
+}
+
+.mask-scroll-fade-bottom {
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 22px), transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 22px), transparent 100%);
+}
+
+.mask-scroll-fade-both {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 22px, black calc(100% - 22px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 22px, black calc(100% - 22px), transparent 100%);
+}
+
+/* ── 思考信息块悬停显隐细滚动条 (Hover-only Thin Scrollbar) ── */
+.thinking-scroll-area {
+  --scrollbar-thumb: transparent;
+  --scrollbar-track: transparent;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-gutter: stable;
+}
+
+.thinking-scroll-area:hover {
+  --scrollbar-thumb: rgba(148, 163, 184, 0.28);
+}
+
+.thinking-scroll-area::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.thinking-scroll-area::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.thinking-scroll-area::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 9999px;
+}
+
+.thinking-scroll-area:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+}
+
+
+.chat-markdown li > p { margin: 0.2rem 0; }
+.chat-markdown blockquote {
+  margin: 0.75rem 0;
+  padding: 0.25rem 0 0.25rem 0.9rem;
+  border-left: 3px solid rgba(129, 140, 248, 0.7);
+  color: #cbd5e1;
+}
+.chat-markdown pre {
+  margin: 0.75rem 0;
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 0.75rem;
+  background: rgba(2, 6, 23, 0.72);
+  color: #dbeafe;
+  font-size: 0.9em;
+}
+.chat-markdown :not(pre) > code {
+  padding: 0.08rem 0.3rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 0.35rem;
+  background: rgba(15, 23, 42, 0.82);
+  color: #c4b5fd;
+  font-size: 0.9em;
+}
+.chat-markdown hr { margin: 0.9rem 0; }
+.chat-markdown-link { color: #a5b4fc; text-decoration: underline; text-underline-offset: 3px; }
+.chat-markdown-table-wrap {
+  max-width: 100%;
+  margin: 0.8rem 0;
+  overflow-x: auto;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 0.65rem;
+}
+.chat-markdown table { width: 100%; border-collapse: collapse; }
+.chat-markdown th,
+.chat-markdown td {
+  min-width: 5rem;
+  padding: 0.55rem 0.75rem;
+  border-right: 1px solid rgba(148, 163, 184, 0.14);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  text-align: left;
+  vertical-align: top;
+}
+.chat-markdown th { color: #e2e8f0; background: rgba(30, 41, 59, 0.78); font-weight: 600; }
+.chat-markdown tr:last-child td { border-bottom: 0; }
+.chat-markdown th:last-child,
+.chat-markdown td:last-child { border-right: 0; }
+.chat-markdown-diagram {
+  max-width: 100%;
+  margin: 0.85rem 0;
+  padding: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 0.75rem;
+  background: rgba(2, 6, 23, 0.5);
+}
+.chat-markdown-diagram-canvas { max-width: 100%; overflow: auto; text-align: center; }
+.chat-markdown-diagram-canvas svg { display: inline-block; max-width: 100%; height: auto; }
+.chat-markdown-diagram-status,
+.chat-markdown-diagram-error { padding: 0.65rem; color: #94a3b8; text-align: center; }
+.chat-markdown-diagram-error { color: #fca5a5; }
+.chat-markdown-diagram-source { margin-top: 0.5rem; color: #94a3b8; font-size: 0.8rem; }
+.chat-markdown-diagram-source summary { cursor: pointer; user-select: none; }
+.chat-markdown-diagram-source pre { margin-bottom: 0; }
+
+.border-dark-750 {
+  border-color: #1A2234 !important;
+}
+.border-dark-800 {
+  border-color: #111827 !important;
+}
+.border-dark-700 {
+  border-color: #1F2937 !important;
+}
+.border-dark-650 {
+  border-color: #2B3649 !important;
+}
+.border-dark-600 {
+  border-color: #374151 !important;
+}
+.border-brand-500 {
+  border-color: #6366F1 !important;
+}
+.border-brand-cyan {
+  border-color: #06B6D4 !important;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0B0F17;
+  color: #F3F4F6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow: hidden;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111827;
+}
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4B5563;
+}
+
+/* 苹果拟态半透明亚克力毛玻璃质感 (Glassmorphism) */
+.glass-panel-apple {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(24, 32, 50, 0.72) 20%, rgba(13, 18, 29, 0.86) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.glass-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+@keyframes neonRainbowFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-neon-flow {
+  background: linear-gradient(90deg, #06B6D4, #6366F1, #EC4899, #F59E0B, #10B981, #06B6D4);
+  background-size: 300% 300%;
+  animation: neonRainbowFlow 2.5s linear infinite;
+}
+
+.neon-flow-shadow {
+  box-shadow: 0 -3px 20px rgba(99, 102, 241, 0.45), 0 -1px 8px rgba(6, 182, 212, 0.5);
+}
+
+/* 彻底清除视频任何原生外框、聚焦高亮和彩色边框 */
+video,
+video:focus,
+video:focus-visible,
+video:active,
+video:hover {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+video:not([controls])::-webkit-media-controls {
+  display: none !important;
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-42px);
+  }
+  60% {
+    opacity: 0.9;
+    transform: translateX(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInFromLeft 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ========================================================= */
+/* 流体字响应式阶梯规范 (Fluid Typography Hierarchy)         */
+/* 紧凑精致比例，按用户需求适度放大 1-2px (约 +0.09rem~0.12rem) */
+/* ========================================================= */
+.font-fluid-h1,
+.text-fluid-h1,
+.text-fluid-xl {
+  font-size: clamp(1.125rem, 1.04rem + 0.5vw, 1.375rem);
+  line-height: 1.3;
+}
+
+.font-fluid-title,
+.text-fluid-title,
+.text-fluid-lg {
+  font-size: clamp(0.96875rem, 0.9rem + 0.28vw, 1.1rem);
+  line-height: 1.35;
+}
+
+.font-fluid-base,
+.text-fluid-base {
+  font-size: clamp(0.90625rem, 0.85rem + 0.18vw, 0.96875rem);
+  line-height: 1.45;
+}
+
+.font-fluid-sm,
+.text-fluid-sm {
+  font-size: clamp(0.84375rem, 0.79rem + 0.16vw, 0.90625rem);
+  line-height: 1.4;
+}
+
+.font-fluid-xs,
+.text-fluid-xs {
+  font-size: clamp(0.78125rem, 0.74rem + 0.12vw, 0.84375rem);
+  line-height: 1.35;
+}
+
+/* 全局设置中心容器流体排版基准 */
+.settings-modal-fluid {
+  font-size: clamp(0.90625rem, 0.85rem + 0.16vw, 0.96875rem);
+  line-height: 1.45;
+}
+
+/* ========================================================= */
+/* 通用拟态玻璃视觉体系 (Glassmorphism Universal System)       */
+/* 兼容任意颜色主题，支持 CSS 变量 --glass-bg, --glass-border  */
+/* ========================================================= */
+.glass-surface {
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.45)) !important;
+  border: var(--glass-border-width, 1px) solid var(--glass-border, rgba(255, 255, 255, 0.25));
+  box-shadow: var(--glass-shadow, 0 2px 8px rgba(0, 0, 0, 0.12)) !important;
+}
+
+/* 亮白扁平微透拟态玻璃 (扁平无凸起高光，通透轻盈，彻底移除白边) */
+.glass-light {
+  --glass-bg: rgba(255, 255, 255, 0.48);
+  --glass-border: transparent;
+  --glass-border-width: 0px;
+  --glass-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border: none !important;
+  border-color: transparent !important;
+  color: #0f172a;
+}
+.glass-light:hover {
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-border: transparent;
+  border: none !important;
+  border-color: transparent !important;
+}
+
+/* 暗夜高级拟态玻璃 (高对比度深色磨砂，清晰防透，适合下拉菜单与面板) */
+.glass-dark {
+  --glass-bg: rgba(15, 23, 42, 0.94);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.6);
+  color: #f8fafc;
+}
+.glass-dark:hover {
+  --glass-bg: rgba(15, 23, 42, 0.97);
+  --glass-border: rgba(255, 255, 255, 0.18);
+}
+
+/* 品牌科技紫拟态玻璃 */
+.glass-brand {
+  --glass-bg: rgba(99, 102, 241, 0.28);
+  --glass-border: rgba(99, 102, 241, 0.45);
+  --glass-shadow: 0 8px 24px -2px rgba(99, 102, 241, 0.25), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35);
+  color: #e0e7ff;
+}
+
+/* 青蓝冷光拟态玻璃 */
+.glass-cyan {
+  --glass-bg: rgba(6, 182, 212, 0.24);
+  --glass-border: rgba(6, 182, 212, 0.42);
+  --glass-shadow: 0 8px 24px -2px rgba(6, 182, 212, 0.22), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35);
+  color: #cffafe;
+}
+
+/* 琥珀暖金拟态玻璃 */
+.glass-amber {
+  --glass-bg: rgba(245, 158, 11, 0.24);
+  --glass-border: rgba(245, 158, 11, 0.42);
+  --glass-shadow: 0 8px 24px -2px rgba(245, 158, 11, 0.2), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35);
+  color: #fef3c7;
+}
+
+/* 常用拟态圆角规范 */
+.glass-rounded-12 {
+  border-radius: 12px !important;
+}
+.glass-rounded-full {
+  border-radius: 9999px !important;
+}
+
+

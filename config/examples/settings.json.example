@@ -1,0 +1,5 @@
+{
+  "_comment": "首次启动时会复制到 %LOCALAPPDATA%\\MeocoxFlow\\settings.json。defaultProjectsRoot 留空则使用默认项目工作区 %USERPROFILE%\\Videos\\Meocox Flow。若填写的目录不存在，应用会自动回退到默认工作区。",
+  "defaultProjectsRoot": "",
+  "defaultAssetLibraryDir": ""
+}

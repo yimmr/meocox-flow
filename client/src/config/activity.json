@@ -1,0 +1,77 @@
+{
+  "actionTypes": {
+    "tool": {
+      "label": "工具指令",
+      "icon": "Wrench",
+      "theme": "cyan"
+    },
+    "skill": {
+      "label": "复合技能",
+      "icon": "Sparkles",
+      "theme": "amber"
+    },
+    "mcp": {
+      "label": "MCP",
+      "icon": "Network",
+      "theme": "purple"
+    },
+    "command": {
+      "label": "指令",
+      "icon": "Terminal",
+      "theme": "emerald"
+    },
+    "thinking": {
+      "label": "思考",
+      "icon": "Brain",
+      "theme": "indigo"
+    }
+  },
+  "defaultAction": {
+    "label": "执行动作",
+    "icon": "Cpu",
+    "theme": "slate"
+  },
+  "activityStatuses": {
+    "running": {
+      "label": "执行中",
+      "color": "indigo",
+      "pulse": true
+    },
+    "waiting_decision": {
+      "label": "等待决策",
+      "color": "amber",
+      "pulse": false
+    },
+    "failed": {
+      "label": "存在异常",
+      "color": "rose",
+      "pulse": false
+    },
+    "completed": {
+      "label": "已完成",
+      "color": "emerald",
+      "pulse": false
+    }
+  },
+  "terms": {
+    "workingAreaTitle": "工作区",
+    "expand": "展开",
+    "collapse": "收起",
+    "paramsDrawer": "出入参"
+  },
+  "filterKeywords": [
+    "执行成功",
+    "成功",
+    "操作成功",
+    "调用成功",
+    "执行完成",
+    "完成",
+    "success",
+    "succeeded",
+    "completed",
+    "ok",
+    "done",
+    "finished",
+    "true"
+  ]
+}

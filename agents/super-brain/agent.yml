@@ -1,0 +1,8 @@
+id: super-brain
+name: Super Brain
+title: 参谋总长
+role: 系统总控编排主脑
+avatar: "🧠"
+model: gemini-3.8-flash-high
+skills: []
+tools: [dispatch_agent, assign_task_to_agent, request_hitl_decision, apply_workflow_decision, inspect_system_capabilities, inspect_video_content, list_pipeline_templates, get_pipeline_status, get_motion_manifest, get_motion_components_catalog, get_local_models_status]

@@ -1,0 +1,46 @@
+{
+  "_comment": "首次启动时会复制到 %LOCALAPPDATA%\\MeocoxFlow\\providers.json。请在「设置 → 模型」中填入你自己的 API Key，切勿把真实密钥提交进代码仓库。",
+  "providers": [
+    {
+      "id": "prov_yimmr",
+      "name": "yimmr (Gemini 3.8 Flash)",
+      "type": "custom",
+      "baseUrl": "https://ai.yimmx.xyz/v1",
+      "apiKey": "your_api_key_here",
+      "models": [
+        {
+          "id": "gemini-3.8-flash-high",
+          "name": "gemini-3.8-flash-high"
+        }
+      ]
+    },
+    {
+      "id": "prov_ollama",
+      "name": "Ollama (本地模型)",
+      "type": "custom",
+      "baseUrl": "http://127.0.0.1:11434/v1",
+      "apiKey": "local",
+      "models": [
+        {
+          "id": "qwen2.5-coder:14b",
+          "name": "qwen2.5-coder:14b"
+        }
+      ]
+    },
+    {
+      "id": "prov_harbor",
+      "name": "TokenHarbor",
+      "type": "custom",
+      "baseUrl": "https://tokenharbor.ai/v1",
+      "apiKey": "",
+      "models": [
+        {
+          "id": "deepseek-v4.1-flash:free",
+          "name": "DeepSeek V4.1 Flash"
+        }
+      ]
+    }
+  ],
+  "activeProviderId": "prov_yimmr",
+  "activeModelId": "gemini-3.8-flash-high"
+}

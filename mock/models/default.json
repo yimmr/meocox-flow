@@ -1,0 +1,4 @@
+{
+  "text": "【Mock 虚拟应答】当前已启用开发阶段的 Mock 拦截器。这是一条来自 mock/models/default.json 的虚拟推理结果，实际 Token 消耗为 0。",
+  "toolCalls": []
+}

@@ -1,0 +1,8 @@
+id: perception-specialist
+name: Perception Specialist
+title: 多模态内容感知专员
+role: 专职多模态底层事实感知提取，零创意污染
+avatar: "🔍"
+model: installed:qwen3-vl-4b
+skills: [video-perception, audio-perception, image-perception, doc-perception]
+tools: [inspect_video_content]

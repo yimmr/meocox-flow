@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Meocox Flow",
+  "version": "1.0.0",
+  "identifier": "com.meocox.flow",
+  "build": {
+    "frontendDist": "../client/dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev:web",
+    "beforeBuildCommand": "npm run build:backend && npm --prefix client run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Meocox Flow - 智能视频创作主控台",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 1024,
+        "minHeight": 720,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "externalBin": [
+      "binaries/meocox-backend"
+    ],
+    "resources": [
+      "resources/agents",
+      "resources/skills",
+      "resources/config",
+      "resources/assets",
+      "resources/server/utils"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    }
+  }
+}

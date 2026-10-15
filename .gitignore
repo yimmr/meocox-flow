@@ -1,0 +1,77 @@
+# Logs & runtime
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node dependencies
+node_modules/
+package-lock.json.bak
+pnpm-lock.yaml
+
+# Environment variables & secrets (CRITICAL)
+.env
+.env.*
+!.env.example
+
+# Production builds
+dist/
+dist-ssr/
+client/dist/
+build/
+output/
+
+# Rust / Tauri build artifacts (CRITICAL - 3GB+)
+src-tauri/target/
+src-tauri/gen/schemas/
+# Sidecar 二进制与运行时资源（由 `npm run build:sea` 生成，单文件 90MB+）
+src-tauri/binaries/
+src-tauri/resources/
+server/.sea-build/
+
+# Local cache & mutable runtime data
+data/cache/*
+!data/cache/.gitkeep
+data/projects/*
+!data/projects/.gitkeep
+data/storage/*
+!data/storage/.gitkeep
+# Local AI model weights (GB-scale GGUF files, re-downloadable)
+data/models/
+data/output/
+data/logs/
+data.legacy-backup-*/
+data/providers.json
+!data/providers.json.example
+data/settings.json
+!data/settings.json.example
+# 旧版 CWD 相对路径产物（应用化改造后不应再产生，保留兜底）
+server/data/
+**/data/projects/*
+!**/data/projects/.gitkeep
+**/data/cache/*
+!**/data/cache/.gitkeep
+**/data/storage/*
+!**/data/storage/.gitkeep
+data/curated_mixkit.json
+*.tmp
+*.tmp.*
+
+# IDE & OS files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Agent scratch
+.hermes
+PROJECT_STATUS.md

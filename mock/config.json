@@ -1,0 +1,6 @@
+{
+  "enabled": false,
+  "mockModels": true,
+  "mockTools": true,
+  "logInterception": true
+}

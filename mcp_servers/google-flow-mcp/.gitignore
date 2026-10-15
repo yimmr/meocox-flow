@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.data/
+downloads/
+browser-profile/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db

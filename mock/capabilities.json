@@ -1,0 +1,64 @@
+{
+  "agents": [
+    {
+      "id": "super-brain",
+      "name": "Super Brain (超级主脑)",
+      "role": "参谋总长",
+      "avatar": "🧠",
+      "description": "系统全能主脑与总控编排中枢，统领项目的思考规划、需求细化、智能体协同调度与系统的自我演化",
+      "skills": [],
+      "tools": [
+        "dispatch_agent",
+        "assign_task_to_agent",
+        "request_hitl_decision",
+        "apply_workflow_decision",
+        "inspect_system_capabilities",
+        "inspect_video_content",
+        "list_pipeline_templates",
+        "get_pipeline_status",
+        "register_dynamic_agent",
+        "register_dynamic_skill"
+      ]
+    },
+    {
+      "id": "perception-specialist",
+      "name": "Perception Specialist (内容感知专员)",
+      "role": "多模态感知专员",
+      "avatar": "👁️",
+      "description": "专职将非文本资产(音视频/图片/文档)降维转化为结构化语义文本并管理CAS物理缓存",
+      "skills": [
+        "video-perception",
+        "audio-perception",
+        "image-perception",
+        "doc-perception"
+      ],
+      "tools": [
+        "inspect_video_content"
+      ]
+    },
+    {
+      "id": "evolution-specialist",
+      "name": "Evolution Specialist (系统进化专家)",
+      "role": "架构与进化专家",
+      "avatar": "⚡",
+      "description": "专职根据系统能力缺口与架构指南，设计、规范化编写并自检注册新智能体与技能规约",
+      "skills": [
+        "system-blueprint-guide",
+        "system-compliance-check"
+      ],
+      "tools": [
+        "register_dynamic_agent",
+        "register_dynamic_skill",
+        "inspect_system_capabilities"
+      ]
+    }
+  ],
+  "suggestedPrompts": [
+    {
+      "id": "mock_p1",
+      "title": "项目全局规划与资产探查",
+      "prompt": "你好主脑，请全面盘点当前工作区并为我梳理创作策略与后续排期方案。"
+    }
+  ],
+  "tools": []
+}

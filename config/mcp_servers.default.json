@@ -1,0 +1,12 @@
+{
+  "_comment": "App-shipped default MCP manifest (read-only). To add or override servers, use Settings > MCP, which writes to %LOCALAPPDATA%\\MeocoxFlow\\mcp_servers.json. Paths may use ${APP_ROOT} and ${ASSETS_DIR} placeholders.",
+  "mcpServers": {
+    "google-flow": {
+      "command": "node",
+      "args": [
+        "${APP_ROOT}/mcp_servers/google-flow-mcp/dist/src/index.js"
+      ],
+      "disabled": false
+    }
+  }
+}

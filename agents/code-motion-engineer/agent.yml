@@ -1,0 +1,8 @@
+id: code-motion-engineer
+name: Code Motion Engineer
+title: 动效代码架构师
+role: 确定性代码动效与场景装配专家
+avatar: "💻"
+model: gemini-3.8-flash-high
+skills: [code-as-video-catalog, motion-design-system, remotion-best-practices]
+tools: [inspect_system_capabilities, update_storyboard, get_motion_components_catalog, get_motion_manifest, synthesize_motion_scenes, render_video_mp4, synthesize_cosyvoice, synthesize_procedural_sfx]

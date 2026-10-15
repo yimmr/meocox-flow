@@ -1,0 +1,12 @@
+{
+  "platform": "mock-virtual-os",
+  "arch": "mock-x64",
+  "nodeVersion": "v22.0.0-mock",
+  "uptimeSec": 88888,
+  "memory": {
+    "totalMb": 16384,
+    "freeMb": 8192,
+    "usedPercent": 50
+  },
+  "isVirtualMock": true
+}

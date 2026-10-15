@@ -1,0 +1,8 @@
+id: voice-scout
+name: Voice Scout
+title: 本地配音专员
+role: CosyVoice 2 本地语音合成与逐字时间戳对齐专员
+avatar: "🎙️"
+model: gemini-3.8-flash-high
+skills: [cosyvoice-voiceover]
+tools: [synthesize_cosyvoice, download_local_model, get_local_models_status]
