@@ -3,7 +3,15 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Instant;
 use tauri::State;
-use crate::orchestrator::types::{AssetId, AssetMetadata, CheckpointRecord, DaemonStatus};
+use crate::blackboard::types::{AuditLogEntry, BlackboardState};
+use crate::blackboard::Blackboard;
+use crate::orchestrator::types::{
+    AssetId, AssetMetadata, CheckpointRecord, DaemonStatus, TurnSteerPayload,
+};
+use crate::orchestrator::{
+    AestheticMemoryDistiller, AestheticMemoryRecord, Director, ProgressiveSkillLoader,
+    SkillIndexItem, VisualWorker,
+};
 use crate::pipeline::{CapCutClipInput, CapCutExportResult, SoundEffectType};
 use crate::sandbox::{QuotaEstimate, QuotaGuardian};
 use crate::storage::StorageManager;
@@ -15,6 +23,7 @@ pub struct DaemonState {
     pub storage: Arc<StorageManager>,
     pub quota: Arc<QuotaGuardian>,
     pub app_data_dir: PathBuf,
+    pub blackboard: Arc<Blackboard>,
 }
 
 impl DaemonState {
@@ -26,6 +35,7 @@ impl DaemonState {
             storage,
             quota: Arc::new(QuotaGuardian::new(500)), // 默认每日限额 500 美分 ($5.00)
             app_data_dir,
+            blackboard: Arc::new(Blackboard::new("Meocox Flow Studio")),
         }
     }
 
@@ -184,4 +194,158 @@ pub async fn list_studio_checkpoints(
     state: State<'_, Arc<DaemonState>>,
 ) -> Result<Vec<CheckpointRecord>, String> {
     state.storage.list_checkpoints()
+}
+
+// ==========================================
+// 阶段四：工业级多智能体壁垒 IPC 命令集
+// ==========================================
+
+/// 获取全局剧组共享黑板快照 (L3 共享黑板)
+#[tauri::command]
+#[specta::specta]
+pub async fn get_blackboard_state(
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<BlackboardState, String> {
+    Ok(state.blackboard.get_snapshot().await)
+}
+
+/// 导演主导的分镜大纲拆解与黑板初始化
+#[tauri::command]
+#[specta::specta]
+pub async fn orchestrate_storyboard(
+    prompt: String,
+    style_id: Option<String>,
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<BlackboardState, String> {
+    Director::orchestrate_storyboard(&prompt, style_id.as_deref(), &state.blackboard).await?;
+    Ok(state.blackboard.get_snapshot().await)
+}
+
+/// 启动批量分镜媒体管线渲染与连贯性质检
+#[tauri::command]
+#[specta::specta]
+pub async fn start_pipeline_execution(
+    scene_ids: Vec<String>,
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<BlackboardState, String> {
+    let derived_root = state.app_data_dir.join(".flow").join("derived");
+    state.is_rendering.store(true, Ordering::SeqCst);
+
+    for scn_id in &scene_ids {
+        let _ = Director::execute_single_scene(
+            scn_id,
+            &derived_root,
+            &state.blackboard,
+            &state.storage,
+        )
+        .await;
+    }
+
+    state.is_rendering.store(false, Ordering::SeqCst);
+    Ok(state.blackboard.get_snapshot().await)
+}
+
+/// 注入生成中途动态切轨控制帧 (TurnSteer)
+#[tauri::command]
+#[specta::specta]
+pub async fn inject_turn_steer_frame(
+    payload: TurnSteerPayload,
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<BlackboardState, String> {
+    Director::apply_turn_steer(&payload, &state.blackboard).await?;
+    Ok(state.blackboard.get_snapshot().await)
+}
+
+/// 对特定重点分镜开启审美竞技场双分支 (Battle Mode)
+#[tauri::command]
+#[specta::specta]
+pub async fn start_battle_mode(
+    scene_id: String,
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<BlackboardState, String> {
+    let derived_root = state.app_data_dir.join(".flow").join("derived");
+    let snapshot = state.blackboard.get_snapshot().await;
+    let scene = snapshot
+        .scene_dag
+        .scenes
+        .iter()
+        .find(|s| s.id == scene_id)
+        .cloned()
+        .ok_or_else(|| format!("Scene not found: {scene_id}"))?;
+
+    let branches = VisualWorker::render_battle_branches(
+        &derived_root,
+        &scene,
+        &snapshot.bible.style,
+        &state.storage,
+    )
+    .await?;
+
+    state.blackboard.set_battle_branches(&scene_id, branches).await;
+    Ok(state.blackboard.get_snapshot().await)
+}
+
+/// 裁决变体竞技场胜出分支并原子回写设定集
+#[tauri::command]
+#[specta::specta]
+pub async fn resolve_battle_winner(
+    scene_id: String,
+    winner_branch_id: String,
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<BlackboardState, String> {
+    state.blackboard.resolve_battle_winner(&scene_id, &winner_branch_id).await
+}
+
+/// 执行指定镜头的连贯性证伪质检
+#[tauri::command]
+#[specta::specta]
+pub async fn verify_scene_continuity(
+    scene_id: String,
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<AuditLogEntry, String> {
+    let derived_root = state.app_data_dir.join(".flow").join("derived");
+    Director::execute_single_scene(&scene_id, &derived_root, &state.blackboard, &state.storage).await
+}
+
+/// Level 1: 扫描并列出三级渐进式技能微索引
+#[tauri::command]
+#[specta::specta]
+pub async fn list_skill_indexes(
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<Vec<SkillIndexItem>, String> {
+    let items = ProgressiveSkillLoader::scan_skill_indexes(&state.app_data_dir).await;
+    Ok(items)
+}
+
+/// Level 2: 按需动态加载指定技能完整 SOP
+#[tauri::command]
+#[specta::specta]
+pub async fn load_skill_content(
+    skill_name: String,
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<String, String> {
+    ProgressiveSkillLoader::load_skill_sop(&state.app_data_dir, &skill_name).await
+}
+
+/// 查询跨会话沉淀的审美记忆
+#[tauri::command]
+#[specta::specta]
+pub async fn list_aesthetic_memories(
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<Vec<AestheticMemoryRecord>, String> {
+    state.storage.list_aesthetic_memories()
+}
+
+/// 异步提炼当前黑板审美记忆并持久化
+#[tauri::command]
+#[specta::specta]
+pub async fn distill_and_save_aesthetic_memory(
+    state: State<'_, Arc<DaemonState>>,
+) -> Result<Vec<AestheticMemoryRecord>, String> {
+    let snapshot = state.blackboard.get_snapshot().await;
+    let records = AestheticMemoryDistiller::distill_from_blackboard(&snapshot);
+    for r in &records {
+        let _ = state.storage.insert_aesthetic_memory(r);
+    }
+    state.storage.list_aesthetic_memories()
 }

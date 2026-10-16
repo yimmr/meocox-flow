@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStudioStore } from '@/stores/useStudioStore';
 import { open } from '@tauri-apps/plugin-dialog';
 import {
@@ -11,6 +11,9 @@ import {
   Wand2,
   Tag,
   Search,
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { type SoundEffectType } from '@/bindings';
 
@@ -28,12 +31,21 @@ export const ProjectLibrarySidebar: React.FC<ProjectLibrarySidebarProps> = ({ wi
     setActiveArtifactTab,
     setTurnSteerInput,
     turnSteerInput,
+    skillIndexes,
+    fetchSkills,
+    fetchBlackboardState,
   } = useStudioStore();
 
   const [filterType, setFilterType] = useState<'all' | 'video' | 'audio' | 'image'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [isSynthesizing, setIsSynthesizing] = useState(false);
+  const [isSkillsExpanded, setIsSkillsExpanded] = useState(false);
+
+  useEffect(() => {
+    fetchSkills();
+    fetchBlackboardState();
+  }, [fetchSkills, fetchBlackboardState]);
 
   const handleImportFile = async () => {
     try {
@@ -89,6 +101,10 @@ export const ProjectLibrarySidebar: React.FC<ProjectLibrarySidebarProps> = ({ wi
     setTurnSteerInput(`${turnSteerInput}${tag}`);
   };
 
+  const handleInsertSkillKeyword = (keyword: string) => {
+    setTurnSteerInput(`${turnSteerInput} [启用技能: ${keyword}] `);
+  };
+
   return (
     <aside
       style={{ width }}
@@ -130,40 +146,40 @@ export const ProjectLibrarySidebar: React.FC<ProjectLibrarySidebarProps> = ({ wi
           <button
             onClick={() => handleQuickSynth('Whoosh')}
             disabled={isSynthesizing}
-            className="text-[10px] py-1 px-1.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-neutral-300 text-center transition-colors truncate"
-            title="生成 16-bit PCM Whoosh 转场音效"
+            className="px-1.5 py-1 rounded bg-neutral-850 hover:bg-neutral-800 text-[10px] text-neutral-300 border border-neutral-750 flex flex-col items-center gap-0.5 transition-colors disabled:opacity-50"
           >
-            Whoosh 转场
+            <span>Whoosh</span>
+            <span className="text-[8px] text-neutral-500 font-mono">0.45s 转场</span>
           </button>
           <button
             onClick={() => handleQuickSynth('Chime')}
             disabled={isSynthesizing}
-            className="text-[10px] py-1 px-1.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-neutral-300 text-center transition-colors truncate"
-            title="生成 16-bit PCM Chime 提示音"
+            className="px-1.5 py-1 rounded bg-neutral-850 hover:bg-neutral-800 text-[10px] text-neutral-300 border border-neutral-750 flex flex-col items-center gap-0.5 transition-colors disabled:opacity-50"
           >
-            Chime 提示
+            <span>Chime</span>
+            <span className="text-[8px] text-neutral-500 font-mono">0.8s 提示</span>
           </button>
           <button
             onClick={() => handleQuickSynth('TechAmbient')}
             disabled={isSynthesizing}
-            className="text-[10px] py-1 px-1.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-neutral-300 text-center transition-colors truncate"
-            title="生成 Lo-Fi 科技氛围背景音乐"
+            className="px-1.5 py-1 rounded bg-neutral-850 hover:bg-neutral-800 text-[10px] text-neutral-300 border border-neutral-750 flex flex-col items-center gap-0.5 transition-colors disabled:opacity-50"
           >
-            Lo-Fi BGM
+            <span>Tech BGM</span>
+            <span className="text-[8px] text-neutral-500 font-mono">16s 背景</span>
           </button>
         </div>
       </div>
 
-      {/* 检索与分类过滤器 */}
-      <div className="p-2 border-b border-neutral-800 space-y-2">
+      {/* 搜索与类型过滤 */}
+      <div className="p-2.5 border-b border-neutral-800 space-y-2">
         <div className="relative">
-          <Search className="w-3 h-3 absolute left-2.5 top-2 text-neutral-500" />
+          <Search className="w-3 h-3 text-neutral-500 absolute left-2 top-2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索资产名称 / 句柄..."
-            className="w-full pl-7 pr-2.5 py-1 text-xs bg-neutral-900 border border-neutral-800 rounded text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-blue-500"
+            placeholder="搜索资产名称、ID 或特征..."
+            className="w-full bg-neutral-900 border border-neutral-800 rounded-md pl-6 pr-2 py-1 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-blue-500"
           />
         </div>
 
@@ -172,16 +188,13 @@ export const ProjectLibrarySidebar: React.FC<ProjectLibrarySidebarProps> = ({ wi
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`flex-1 py-0.5 rounded text-center transition-colors ${
+              className={`px-2 py-0.5 rounded text-[10px] capitalize transition-colors ${
                 filterType === type
-                  ? 'bg-neutral-800 text-neutral-100 font-medium'
-                  : 'text-neutral-500 hover:text-neutral-300'
+                  ? 'bg-blue-600 text-white font-medium'
+                  : 'bg-neutral-900 text-neutral-400 hover:text-neutral-200'
               }`}
             >
-              {type === 'all' && '全部'}
-              {type === 'video' && '视频'}
-              {type === 'audio' && '音频'}
-              {type === 'image' && '图像'}
+              {type === 'all' ? '全部' : type}
             </button>
           ))}
         </div>
@@ -190,12 +203,10 @@ export const ProjectLibrarySidebar: React.FC<ProjectLibrarySidebarProps> = ({ wi
       {/* 资产列表区 */}
       <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
         {filteredAssets.length === 0 ? (
-          <div className="h-44 flex flex-col items-center justify-center text-center p-4 text-neutral-600 space-y-2">
-            <FolderOpen className="w-7 h-7 text-neutral-700" />
-            <div className="text-xs text-neutral-400">暂无匹配资产</div>
-            <p className="text-[10px] text-neutral-600 leading-tight">
-              点击上方导入或使用免版税音效即时生成
-            </p>
+          <div className="p-6 text-center text-xs text-neutral-500">
+            <FolderOpen className="w-8 h-8 mx-auto mb-2 opacity-30 text-neutral-400" />
+            <p>暂无符合条件的媒体资产</p>
+            <p className="text-[10px] text-neutral-600 mt-1">导入或生成后将自动登记入库</p>
           </div>
         ) : (
           filteredAssets.map((asset) => {
@@ -260,6 +271,57 @@ export const ProjectLibrarySidebar: React.FC<ProjectLibrarySidebarProps> = ({ wi
               </div>
             );
           })
+        )}
+      </div>
+
+      {/* Level 1 渐进式技能微索引折叠面板 */}
+      <div className="border-t border-neutral-800 bg-neutral-950 shrink-0">
+        <button
+          onClick={() => setIsSkillsExpanded(!isSkillsExpanded)}
+          className="w-full px-3 py-2 flex items-center justify-between text-[11px] text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/60 transition-colors"
+        >
+          <div className="flex items-center gap-1.5">
+            <BookOpen className="w-3 h-3 text-cyan-400" />
+            <span className="font-medium">视听技能微索引 (Level 1)</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] font-mono text-neutral-500">
+              {skillIndexes.length} 技能
+            </span>
+            {isSkillsExpanded ? (
+              <ChevronDown className="w-3 h-3" />
+            ) : (
+              <ChevronRight className="w-3 h-3" />
+            )}
+          </div>
+        </button>
+
+        {isSkillsExpanded && (
+          <div className="p-2 space-y-1.5 max-h-40 overflow-y-auto bg-neutral-900/50 border-t border-neutral-850">
+            {skillIndexes.map((skill) => (
+              <div
+                key={skill.name}
+                className="p-1.5 rounded bg-neutral-950 border border-neutral-800 text-[10px] space-y-1"
+              >
+                <div className="flex items-center justify-between font-mono text-cyan-300">
+                  <span>{skill.name}</span>
+                </div>
+                <p className="text-neutral-400 line-clamp-1">{skill.description}</p>
+                <div className="flex flex-wrap gap-1 pt-0.5">
+                  {skill.trigger_keywords.map((kw: string, i: number) => (
+                    <button
+                      key={i}
+                      onClick={() => handleInsertSkillKeyword(kw)}
+                      className="px-1 py-0.2 rounded bg-neutral-850 hover:bg-cyan-950 hover:text-cyan-300 border border-neutral-750 text-[9px] text-neutral-400 transition-colors"
+                      title="点击将技能关键词填入切轨栏"
+                    >
+                      +{kw}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

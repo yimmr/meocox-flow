@@ -8,15 +8,20 @@ import {
   type CapCutExportResult,
   type QuotaEstimate,
   type CheckpointRecord,
+  type BlackboardState,
+  type SkillIndexItem,
+  type AestheticMemoryRecord,
+  type StoryboardSceneNode,
 } from '@/bindings';
 import {
   type DirectorMessage,
   type DirectorCardData,
   type StoryboardCardPayload,
-  type StyleCardPayload,
-  type QuotaCardPayload,
+  type BattleCardPayload,
   type TurnSteerPayload,
 } from '@/types/director';
+
+export type ArtifactTabType = 'visual' | 'audio' | 'capcut' | 'blackboard' | 'falser' | 'memories';
 
 interface StudioState {
   // 守护进程与系统
@@ -24,13 +29,17 @@ interface StudioState {
   // 媒体资产
   assets: AssetMetadata[];
   selectedAsset: AssetMetadata | null;
-  activeArtifactTab: 'visual' | 'audio' | 'capcut';
+  activeArtifactTab: ArtifactTabType;
   capcutExportResult: CapCutExportResult | null;
   isExportingCapCut: boolean;
   // 时光机检查点
   checkpoints: CheckpointRecord[];
   // 算力守卫
   quotaEstimate: QuotaEstimate | null;
+  // 阶段四：剧组黑板与智能体生态
+  blackboardState: BlackboardState | null;
+  skillIndexes: SkillIndexItem[];
+  aestheticMemories: AestheticMemoryRecord[];
   // 布局控制
   isLeftSidebarOpen: boolean;
   isRightSidebarOpen: boolean;
@@ -47,7 +56,7 @@ interface StudioState {
   setLeftWidth: (width: number) => void;
   setRightWidth: (width: number) => void;
   setSelectedAsset: (asset: AssetMetadata | null) => void;
-  setActiveArtifactTab: (tab: 'visual' | 'audio' | 'capcut') => void;
+  setActiveArtifactTab: (tab: ArtifactTabType) => void;
   setTurnSteerInput: (input: string) => void;
 
   // 后端交互
@@ -60,6 +69,17 @@ interface StudioState {
   fetchCheckpoints: () => Promise<void>;
   createCheckpoint: (stepName: string, stateJson: string) => Promise<string | null>;
 
+  // 阶段四：黑板编排、竞技场与审美记忆
+  fetchBlackboardState: () => Promise<void>;
+  orchestrateStoryboard: (prompt: string, styleId?: string) => Promise<void>;
+  startPipelineExecution: (sceneIds: string[]) => Promise<void>;
+  startBattleMode: (sceneId: string) => Promise<void>;
+  resolveBattleWinner: (sceneId: string, winnerBranchId: string) => Promise<void>;
+  verifySceneContinuity: (sceneId: string) => Promise<void>;
+  fetchSkills: () => Promise<void>;
+  fetchAestheticMemories: () => Promise<void>;
+  distillAestheticMemory: () => Promise<void>;
+
   // 对话与动态切轨
   sendMessage: (content: string, attachedAssets?: AssetMetadata[]) => Promise<void>;
   dispatchTurnSteer: (instruction: string) => Promise<void>;
@@ -70,12 +90,12 @@ const initialSeedMessages: DirectorMessage[] = [
   {
     id: 'msg_welcome',
     role: 'assistant',
-    content: '导演您好！我是 Meocox Flow AIGC 创意中枢。当前工程底座已挂载 SQLite WAL 媒体池、16-bit PCM 原生免版税音效生成器与剪映 CapCut Pro 工业级组装引擎。我已为您预先推导了本次短片的镜头构思与风格建议，请在下方声明式卡片中拍板决策：',
+    content: '导演您好！我是 Meocox Flow 剧组智能体编排引擎。当前工作区已挂载 Rust 共享黑板 (Blackboard)、Continuity Falser 知觉证伪者、变体竞技场与渐进式技能加载器。我已将分镜 DAG 初始化至黑板，请在下方确认或开启 Battle Mode 盲测：',
     timestamp: Date.now() - 60000,
     card: {
       type: 'storyboard_confirm',
-      title: '赛博纪元：第 01 幕 视觉概念分镜方案',
-      total_duration_sec: 12.5,
+      title: '赛博纪元：第 01 幕 视觉概念分镜方案 (黑板已同步)',
+      total_duration_sec: 10.5,
       status: 'pending',
       scenes: [
         {
@@ -86,6 +106,7 @@ const initialSeedMessages: DirectorMessage[] = [
           prompt: '雨夜赛博都市俯视全景，雨丝划过全息霓虹广告牌，潮湿反光街道',
           duration_sec: 3.5,
           audio_cue: 'Lo-Fi 科技背景音乐渐入',
+          status: 'Approved',
         },
         {
           id: 'sc_02',
@@ -95,6 +116,7 @@ const initialSeedMessages: DirectorMessage[] = [
           prompt: '机械仿生人眼部义体瞳孔聚焦，极客微光流转，细雨凝结于冷金属面庞',
           duration_sec: 4.0,
           audio_cue: 'Whoosh 电流微啸转场',
+          status: 'Pending',
         },
         {
           id: 'sc_03',
@@ -102,53 +124,12 @@ const initialSeedMessages: DirectorMessage[] = [
           shot_type: '中景 (Medium)',
           camera_movement: '移镜 (Tracking)',
           prompt: '仿生人披上磨损战术风衣，在废弃立交桥边缘起步奔跑，粒子气流激荡',
-          duration_sec: 5.0,
-          audio_cue: '节奏重低音与雨声环境',
+          duration_sec: 3.0,
+          audio_cue: 'Chime 转场与雨声环境',
+          status: 'Pending',
         },
       ],
     } as StoryboardCardPayload,
-  },
-  {
-    id: 'msg_style',
-    role: 'assistant',
-    content: '此外，为了确保后续 Diffusion 与 Video 生成管线的连贯性，请确认整片基调主风格：',
-    timestamp: Date.now() - 40000,
-    card: {
-      type: 'style_selection',
-      title: '视觉风格与调色基调',
-      status: 'pending',
-      selected_style_id: 'style_cyberpunk',
-      options: [
-        {
-          id: 'style_cyberpunk',
-          name: '赛博霓虹 (Cyberpunk Neo-Noir)',
-          description: '青蓝与品红高反差对比，浓烈胶片暗角与雨夜光斑',
-          accent_color: 'from-cyan-500 to-fuchsia-500',
-          badge: '推荐 · 契合当前剧本',
-        },
-        {
-          id: 'style_cinematic_real',
-          name: '35mm 胶片写实 (Cinematic 35mm)',
-          description: '柯达 Kodak 250D 真实颗粒质感，柔和漫射光影',
-          accent_color: 'from-amber-600 to-orange-400',
-          badge: '大师质感',
-        },
-        {
-          id: 'style_retro_anime',
-          name: '80s 复古日漫 (Retro Anime)',
-          description: '手绘赛璐珞粗线条，赛璐珞上色与星芒高光',
-          accent_color: 'from-pink-500 to-indigo-500',
-          badge: '风格化强烈',
-        },
-        {
-          id: 'style_hyper_3d',
-          name: '极客写实 3D (Octane Realism)',
-          description: '物理级着色器光线追踪，高精度微表面机械材质',
-          accent_color: 'from-blue-600 to-emerald-400',
-          badge: '高算力消耗',
-        },
-      ],
-    } as StyleCardPayload,
   },
 ];
 
@@ -161,6 +142,9 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   isExportingCapCut: false,
   checkpoints: [],
   quotaEstimate: null,
+  blackboardState: null,
+  skillIndexes: [],
+  aestheticMemories: [],
   isLeftSidebarOpen: true,
   isRightSidebarOpen: true,
   leftWidth: 280,
@@ -261,6 +245,104 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     return null;
   },
 
+  fetchBlackboardState: async () => {
+    const res = await commands.getBlackboardState();
+    if (res.status === 'ok') {
+      set({ blackboardState: res.data });
+    }
+  },
+
+  orchestrateStoryboard: async (prompt, styleId) => {
+    set({ isGenerating: true });
+    try {
+      const res = await commands.orchestrateStoryboard(prompt, styleId || null);
+      if (res.status === 'ok') {
+        set({ blackboardState: res.data });
+      }
+    } finally {
+      set({ isGenerating: false });
+    }
+  },
+
+  startPipelineExecution: async (sceneIds) => {
+    set({ isGenerating: true });
+    try {
+      const res = await commands.startPipelineExecution(sceneIds);
+      if (res.status === 'ok') {
+        set({ blackboardState: res.data });
+        await get().fetchAssets();
+      }
+    } finally {
+      set({ isGenerating: false });
+    }
+  },
+
+  startBattleMode: async (sceneId) => {
+    const res = await commands.startBattleMode(sceneId);
+    if (res.status === 'ok') {
+      const bb = res.data;
+      set({ blackboardState: bb });
+      await get().fetchAssets();
+
+      // 在对话流中动态生成 BattleCard A2UI 卡片供盲测
+      const scn = bb.scene_dag.scenes.find((s: StoryboardSceneNode) => s.id === sceneId);
+      if (scn && scn.battle_branches) {
+        const battleCardMsg: DirectorMessage = {
+          id: `msg_battle_${Date.now()}`,
+          role: 'assistant',
+          content: `已为重点分镜 #${scn.scene_num} 派生双美学分支。请在下方卡片中进行盲测拍板：`,
+          timestamp: Date.now(),
+          card: {
+            type: 'battle_arena',
+            scene_id: scn.id,
+            scene_num: scn.scene_num,
+            prompt: scn.prompt,
+            branches: scn.battle_branches,
+            status: 'pending',
+          } as BattleCardPayload,
+        };
+        set((state) => ({ messages: [...state.messages, battleCardMsg] }));
+      }
+    }
+  },
+
+  resolveBattleWinner: async (sceneId, winnerBranchId) => {
+    const res = await commands.resolveBattleWinner(sceneId, winnerBranchId);
+    if (res.status === 'ok') {
+      set({ blackboardState: res.data });
+      // 触发跨会话审美记忆提炼
+      await get().distillAestheticMemory();
+    }
+  },
+
+  verifySceneContinuity: async (sceneId) => {
+    const res = await commands.verifySceneContinuity(sceneId);
+    if (res.status === 'ok') {
+      await get().fetchBlackboardState();
+    }
+  },
+
+  fetchSkills: async () => {
+    const res = await commands.listSkillIndexes();
+    if (res.status === 'ok') {
+      set({ skillIndexes: res.data });
+    }
+  },
+
+  fetchAestheticMemories: async () => {
+    const res = await commands.listAestheticMemories();
+    if (res.status === 'ok') {
+      set({ aestheticMemories: res.data });
+    }
+  },
+
+  distillAestheticMemory: async () => {
+    const res = await commands.distillAndSaveAestheticMemory();
+    if (res.status === 'ok') {
+      set({ aestheticMemories: res.data });
+    }
+  },
+
   sendMessage: async (content: string, attachedAssets?: AssetMetadata[]) => {
     if (!content.trim()) return;
 
@@ -277,31 +359,42 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       isGenerating: true,
     }));
 
-    // 智能体推演响应与自动触发算力核算门禁
-    setTimeout(async () => {
-      // 模拟调用 Rust QuotaGuardian 评估一个高算力任务
-      const quota = await get().checkQuota(350, '多模态 4K 分镜超分辨率扩散重绘');
+    // 调用 Rust Director 编排分镜 DAG 并初始化中央黑板
+    const res = await commands.orchestrateStoryboard(content, null);
+    if (res.status === 'ok') {
+      const bb = res.data;
+      set({ blackboardState: bb });
 
       const assistantMsg: DirectorMessage = {
         id: `msg_a_${Date.now()}`,
         role: 'assistant',
-        content: `已收到指令：“${content}”。根据剧本与镜头规划，正在准备批量调用多模态神经渲染管线。该操作已触发 QuotaGuardian 预算门禁，请审批：`,
+        content: `分镜编排已完成！剧组黑板已同步 ${bb.scene_dag.scenes.length} 幕镜头 DAG 拓扑。请审阅确认：`,
         timestamp: Date.now(),
-        card: quota
-          ? ({
-              type: 'quota_approval',
-              task_desc: '4K 分镜超分辨率扩散重绘 (3 组镜头序列)',
-              estimate: quota,
-              status: quota.requires_approval ? 'pending' : 'approved',
-            } as QuotaCardPayload)
-          : undefined,
+        card: {
+          type: 'storyboard_confirm',
+          title: `分镜编排提案: ${content.slice(0, 15)}...`,
+          total_duration_sec: bb.scene_dag.scenes.reduce((acc: number, s: StoryboardSceneNode) => acc + s.duration_sec, 0),
+          status: 'pending',
+          scenes: bb.scene_dag.scenes.map((s: StoryboardSceneNode) => ({
+            id: s.id,
+            scene_num: s.scene_num,
+            shot_type: s.shot_type,
+            camera_movement: s.camera_movement,
+            prompt: s.prompt,
+            duration_sec: s.duration_sec,
+            status: s.status,
+            retry_count: s.retry_count,
+          })),
+        } as StoryboardCardPayload,
       };
 
       set((state) => ({
         messages: [...state.messages, assistantMsg],
         isGenerating: false,
       }));
-    }, 800);
+    } else {
+      set({ isGenerating: false });
+    }
   },
 
   dispatchTurnSteer: async (instruction: string) => {
@@ -326,24 +419,25 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       turnSteerInput: '',
     }));
 
-    // 保存时光机切轨检查点
-    await get().createCheckpoint(
-      `TurnSteer 切轨纠偏: ${instruction.slice(0, 15)}...`,
-      JSON.stringify(payload)
-    );
+    // 直连 Rust 端 inject_turn_steer_frame
+    const res = await commands.injectTurnSteerFrame(payload);
+    if (res.status === 'ok') {
+      set({ blackboardState: res.data });
+      await get().distillAestheticMemory();
+    }
 
     // 智能体回显吸纳切轨确认
     setTimeout(() => {
       const ackMsg: DirectorMessage = {
         id: `msg_steer_ack_${Date.now()}`,
         role: 'assistant',
-        content: `【TurnSteer 切轨控制帧已注入】已锁定并保全已生成的可用分镜资产。后续生成管线已成功吸纳新指令：“${instruction}”，状态机将在下一镜头帧平滑切入新设定！`,
+        content: `【TurnSteer 切轨控制帧已注入】黑板状态机已执行增量重排。已保全已完成镜头，未完成分镜已吸纳纠偏：“${instruction}”！`,
         timestamp: Date.now(),
       };
       set((state) => ({
         messages: [...state.messages, ackMsg],
       }));
-    }, 600);
+    }, 400);
   },
 
   resolveCardAction: (messageId: string, updatedCard: DirectorCardData) => {
@@ -352,5 +446,11 @@ export const useStudioStore = create<StudioState>((set, get) => ({
         m.id === messageId ? { ...m, card: updatedCard } : m
       ),
     }));
+
+    // 若确认了分镜卡片，触发 Rust 媒体管线执行
+    if (updatedCard.type === 'storyboard_confirm' && updatedCard.status === 'confirmed') {
+      const sceneIds = updatedCard.scenes.map((s) => s.id);
+      get().startPipelineExecution(sceneIds);
+    }
   },
 }));

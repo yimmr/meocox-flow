@@ -7,10 +7,10 @@ import {
 } from 'lucide-react';
 
 const QUICK_DEMANDS = [
-  { id: 'qd_1', title: '推导赛博分镜', prompt: '请基于当前设定，推导下一幕中仿生人遭遇重型机甲阻击的 3 组分镜。' },
-  { id: 'qd_2', title: '核算批量算力', prompt: '请评估渲染 4K 60fps 场景扩散重绘任务的算力预算。' },
-  { id: 'qd_3', title: '合成免版税转场音', prompt: '请使用原生 PCM 合成一段 Whoosh 转场音效并登记至媒体库。' },
-  { id: 'qd_4', title: '一键组装剪映草稿', prompt: '请将已有的分镜视频组装为剪映 Pro 工程草稿并输出时间轴。' },
+  { id: 'qd_1', title: '推导分镜 DAG', prompt: '请基于当前赛博雨夜设定，拆解第 01 幕的 3 组分镜 DAG 并同步黑板。' },
+  { id: 'qd_2', title: '开启竞技场盲测', prompt: '请为第 01 幕分镜 #2 派生双分支并启动 Battle Mode 盲测对决。' },
+  { id: 'qd_3', title: '合成 PCM 氛围音效', prompt: '请使用纯数学原生 PCM 合成一段 Lo-Fi 科技背景音效并登记至媒体库。' },
+  { id: 'qd_4', title: '组装剪映 Pro 草稿', prompt: '请将已通过证伪质检的分镜组装为剪映 Pro 工程草稿并输出时间轴。' },
 ];
 
 export const TurnSteerInputBar: React.FC = () => {
@@ -64,56 +64,56 @@ export const TurnSteerInputBar: React.FC = () => {
         </div>
       )}
 
-      {/* 动态输入卡片容器 */}
+      {/* 动态切轨运行状态提示栏 */}
+      {isRendering && (
+        <div className="flex items-center justify-between text-[11px] px-2 py-1 mb-1.5 rounded-md bg-amber-950/40 border border-amber-500/30 text-amber-300 font-mono">
+          <span className="flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+            <span>后台媒体管线运行中 · 当前输入将作为 TurnSteer 控制帧注入，无损切轨</span>
+          </span>
+          <span className="text-[10px] text-amber-400/80">保全前序分镜: ON</span>
+        </div>
+      )}
+
+      {/* 主输入胶囊栏 */}
       <form
         onSubmit={handleSubmit}
-        className={`relative rounded-2xl border transition-all shadow-2xl p-2.5 flex flex-col gap-1.5 ${
+        className={`relative flex items-center rounded-2xl border transition-all ${
           isRendering
-            ? 'bg-neutral-950/90 border-amber-500/50 ring-2 ring-amber-500/10'
-            : 'bg-neutral-950/90 border-neutral-800 hover:border-neutral-700 focus-within:border-blue-500/60'
+            ? 'border-amber-500/60 bg-amber-950/20 shadow-[0_0_20px_rgba(245,158,11,0.15)] focus-within:border-amber-400'
+            : 'border-neutral-800 bg-neutral-900/90 shadow-xl focus-within:border-blue-500/80'
         }`}
       >
-        {/* 切轨指示条 (当处于渲染运行时自动凸显) */}
-        {isRendering && (
-          <div className="flex items-center justify-between px-1 text-[11px] text-amber-300 font-medium">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-              <span>TurnSteer 动态切轨模式激活</span>
-            </div>
-            <span className="text-[10px] text-amber-400/80 font-mono">
-              发送指令将无损切入下一分镜（已生成分镜 100% 保全）
-            </span>
-          </div>
-        )}
+        <div className="pl-3.5 pr-2 py-2 text-neutral-500">
+          {isRendering ? (
+            <Zap className="w-4 h-4 text-amber-400" />
+          ) : (
+            <Sparkles className="w-4 h-4 text-blue-400" />
+          )}
+        </div>
 
-        <div className="relative flex items-center">
-          <textarea
-            value={turnSteerInput}
-            onChange={(e) => setTurnSteerInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(e);
-              }
-            }}
-            rows={1}
-            placeholder={
-              isRendering
-                ? '后台任务运行中... 直接输入纠偏指令（如：把后续分镜镜头调成手持摇晃与冷雨夜色调）'
-                : '向导演中枢下达创作指令（Shift+Enter 换行，支持输入或点击左侧素材进行 @ 引用）...'
-            }
-            className="w-full pl-2 pr-12 py-1.5 text-xs bg-transparent text-neutral-100 placeholder-neutral-500 resize-none focus:outline-none min-h-[38px] max-h-32"
-          />
+        <input
+          type="text"
+          value={turnSteerInput}
+          onChange={(e) => setTurnSteerInput(e.target.value)}
+          placeholder={
+            isRendering
+              ? '【运行态切轨】输入指令中途纠偏（如：“将第二镜视角改为仰拍，光线调暗”），已完成镜头保全...'
+              : '向导演中枢下达指令（如：“围绕废弃立交桥推导赛博分镜”，“开启 Battle Mode 盲测”）...'
+          }
+          className="flex-1 bg-transparent py-3 pr-3 text-xs text-neutral-100 placeholder-neutral-500 focus:outline-none select-text"
+        />
 
+        <div className="pr-2">
           <button
             type="submit"
             disabled={!turnSteerInput.trim()}
-            className={`absolute right-1.5 bottom-1.5 p-2 rounded-xl text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+            className={`p-2 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
               isRendering
-                ? 'bg-amber-600 hover:bg-amber-500 shadow-md shadow-amber-600/30'
-                : 'bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/30'
+                ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md'
+                : 'bg-blue-600 hover:bg-blue-500 text-white shadow'
             }`}
-            title={isRendering ? '发送 TurnSteer 切轨控制帧' : '发送导演指令'}
+            title={isRendering ? '注入 TurnSteer 切轨控制帧' : '发送导演指令'}
           >
             {isRendering ? (
               <Zap className="w-3.5 h-3.5 fill-current" />
@@ -121,16 +121,6 @@ export const TurnSteerInputBar: React.FC = () => {
               <Send className="w-3.5 h-3.5" />
             )}
           </button>
-        </div>
-
-        {/* 底部辅助标注 */}
-        <div className="flex items-center justify-between px-1 pt-1 text-[10px] text-neutral-500 border-t border-neutral-900">
-          <div className="flex items-center gap-2">
-            <span>支持 Markdown</span>
-            <span>·</span>
-            <span>Handle-Only 句柄引用</span>
-          </div>
-          <span>按 Enter 发送</span>
         </div>
       </form>
     </div>

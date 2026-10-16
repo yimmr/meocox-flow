@@ -5,6 +5,7 @@ import { StoryboardConfirmCard } from '@/components/gen-ui/StoryboardConfirmCard
 import { StyleSelectorCard } from '@/components/gen-ui/StyleSelectorCard';
 import { QuotaApprovalCard } from '@/components/gen-ui/QuotaApprovalCard';
 import { CheckpointRecoveryCard } from '@/components/gen-ui/CheckpointRecoveryCard';
+import { BattleCard } from '@/components/gen-ui/BattleCard';
 import {
   Compass,
   Copy,
@@ -13,7 +14,13 @@ import {
 } from 'lucide-react';
 
 export const TimelineFeed: React.FC = () => {
-  const { messages, resolveCardAction, isGenerating } = useStudioStore();
+  const {
+    messages,
+    resolveCardAction,
+    isGenerating,
+    startBattleMode,
+    resolveBattleWinner,
+  } = useStudioStore();
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -33,6 +40,7 @@ export const TimelineFeed: React.FC = () => {
           <StoryboardConfirmCard
             card={msg.card}
             onResolve={(updated) => resolveCardAction(msg.id, updated)}
+            onTriggerBattle={(sceneId) => startBattleMode(sceneId)}
           />
         );
       case 'style_selection':
@@ -56,6 +64,22 @@ export const TimelineFeed: React.FC = () => {
             onResolve={(updated) => resolveCardAction(msg.id, updated)}
           />
         );
+      case 'battle_arena':
+        return (
+          <BattleCard
+            payload={msg.card}
+            onSelectWinner={(sceneId, branchId) => {
+              resolveBattleWinner(sceneId, branchId);
+              if (msg.card && msg.card.type === 'battle_arena') {
+                resolveCardAction(msg.id, {
+                  ...msg.card,
+                  winner_branch_id: branchId,
+                  status: 'resolved',
+                });
+              }
+            }}
+          />
+        );
       default:
         return null;
     }
@@ -74,31 +98,28 @@ export const TimelineFeed: React.FC = () => {
         return (
           <div
             key={msg.id}
-            className={`flex flex-col group/msg ${
-              isUser ? 'items-end' : 'items-start'
-            }`}
+            className={`flex flex-col group ${isUser ? 'items-end' : 'items-start'}`}
           >
-            {/* 发送者信息与时间戳 */}
-            <div className="flex items-center gap-1.5 text-[10px] text-neutral-500 mb-1 px-1">
+            {/* 消息发送者指示器 */}
+            <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mb-1 px-1">
               {isUser ? (
                 <>
+                  <span>{timeFormatted}</span>
+                  <span className="font-medium text-neutral-400">
+                    {isSteer ? '动态切轨控制 (TurnSteer)' : '人类导演'}
+                  </span>
                   {isSteer && (
-                    <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-300 font-mono font-medium">
-                      <Zap className="w-2.5 h-2.5 fill-current" />
-                      <span>TurnSteer 纠偏</span>
+                    <span className="p-0.5 rounded bg-amber-500/20 text-amber-400">
+                      <Zap className="w-2.5 h-2.5" />
                     </span>
                   )}
-                  <span>导演 (You)</span>
-                  <span>·</span>
-                  <span>{timeFormatted}</span>
                 </>
               ) : (
                 <>
-                  <div className="w-4 h-4 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                  <div className="w-3.5 h-3.5 rounded bg-blue-600/30 border border-blue-400/40 flex items-center justify-center text-blue-300">
                     <Compass className="w-2.5 h-2.5" />
                   </div>
-                  <span className="font-medium text-neutral-300">Meocox Flow 导演总长</span>
-                  <span>·</span>
+                  <span className="font-medium text-neutral-300">智能体黑板编排中枢</span>
                   <span>{timeFormatted}</span>
                 </>
               )}
@@ -106,53 +127,52 @@ export const TimelineFeed: React.FC = () => {
 
             {/* 消息正文气泡 */}
             <div
-              className={`relative max-w-2xl px-4 py-3 rounded-2xl text-xs leading-relaxed ${
-                isUser
-                  ? isSteer
-                    ? 'bg-amber-950/40 border border-amber-500/30 text-amber-100 rounded-tr-sm shadow-md'
-                    : 'bg-blue-950/40 border border-blue-500/30 text-neutral-100 rounded-tr-sm shadow-md'
-                  : 'bg-neutral-900/80 border border-neutral-800 text-neutral-200 rounded-tl-sm shadow-sm'
+              className={`relative max-w-2xl px-4 py-2.5 rounded-2xl text-xs leading-relaxed ${
+                isSteer
+                  ? 'bg-amber-950/40 text-amber-200 border border-amber-500/40 shadow-lg'
+                  : isUser
+                  ? 'bg-blue-600 text-white rounded-br-sm shadow'
+                  : 'bg-neutral-900 text-neutral-200 border border-neutral-800 rounded-bl-sm shadow'
               }`}
             >
-              {/* 渲染引用资产标签 */}
+              <div className="whitespace-pre-wrap">{msg.content}</div>
+
+              {/* 附件资产句柄标记 */}
               {msg.attached_assets && msg.attached_assets.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1 mb-2 pb-1.5 border-b border-neutral-800">
+                <div className="mt-2 pt-2 border-t border-neutral-700/50 flex flex-wrap gap-1.5">
                   {msg.attached_assets.map((ast) => (
                     <span
                       key={ast.id}
-                      className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-800 text-[10px] text-neutral-300 font-mono"
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-950/80 text-[10px] text-neutral-300 border border-neutral-700 font-mono"
                     >
                       <Tag className="w-2.5 h-2.5 text-blue-400" />
-                      <span>{ast.name}</span>
+                      <span>{ast.id}</span>
                     </span>
                   ))}
                 </div>
               )}
 
-              {/* 文本内容 */}
-              <div className="whitespace-pre-wrap">{msg.content}</div>
-
-              {/* 悬浮复制工具按钮 */}
+              {/* 悬停快捷复制 */}
               <button
                 onClick={() => handleCopyText(msg.content)}
-                className="absolute right-2 top-2 p-1 rounded bg-neutral-900/80 text-neutral-500 hover:text-neutral-200 opacity-0 group-hover/msg:opacity-100 transition-opacity"
-                title="复制文案"
+                className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 p-1 rounded bg-neutral-800 border border-neutral-700 text-neutral-400 hover:text-neutral-200 transition-opacity"
+                title="复制文本"
               >
-                <Copy className="w-3 h-3" />
+                <Copy className="w-2.5 h-2.5" />
               </button>
             </div>
 
-            {/* 内嵌声明式 A2UI 卡片 (高度 <= 500px) */}
-            {msg.card && <div className="w-full max-w-2xl mt-1">{renderCard(msg)}</div>}
+            {/* 内嵌声明式 A2UI 卡片 */}
+            {msg.card && <div className="w-full mt-1">{renderCard(msg)}</div>}
           </div>
         );
       })}
 
-      {/* 生成中状态指示 */}
+      {/* 智能体生成中呼吸态 */}
       {isGenerating && (
-        <div className="flex items-center gap-2 text-xs text-neutral-400 p-2 rounded-lg bg-neutral-900/40 border border-neutral-800 w-fit">
-          <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-          <span>导演中枢正在推演镜头方案与核算算力预算...</span>
+        <div className="flex items-center gap-2 text-xs text-neutral-400 animate-pulse pl-1">
+          <div className="w-2 h-2 rounded-full bg-blue-500" />
+          <span>编排中枢正在调度并发 Workers 与知觉证伪者...</span>
         </div>
       )}
 

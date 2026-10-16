@@ -7,16 +7,20 @@ import {
   Clock,
   Sparkles,
   Camera,
+  Swords,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface StoryboardConfirmCardProps {
   card: StoryboardCardPayload;
   onResolve: (updated: StoryboardCardPayload) => void;
+  onTriggerBattle?: (sceneId: string) => void;
 }
 
 export const StoryboardConfirmCard: React.FC<StoryboardConfirmCardProps> = ({
   card,
   onResolve,
+  onTriggerBattle,
 }) => {
   const [steeringText, setSteeringText] = useState(card.steering_notes || '');
   const [isEditing, setIsEditing] = useState(false);
@@ -60,110 +64,131 @@ export const StoryboardConfirmCard: React.FC<StoryboardConfirmCardProps> = ({
               <span>分镜已敲定</span>
             </span>
           ) : (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-900/40 border border-blue-500/30 text-blue-300 font-mono">
-              待导演审核
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* 分镜内容列表区 (可滚动，严格遵守高度预算 <= 500px) */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2 text-xs">
-        {card.scenes.map((scene: StoryboardScene) => (
-          <div
-            key={scene.id}
-            className="p-2.5 rounded-lg border border-neutral-800 bg-neutral-950/60 hover:border-neutral-700 transition-colors flex flex-col gap-1.5"
-          >
-            <div className="flex items-center justify-between text-[11px]">
-              <div className="flex items-center gap-2">
-                <span className="font-mono font-bold text-blue-400">
-                  镜头 #{String(scene.scene_num).padStart(2, '0')}
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 font-medium text-[10px]">
-                  {scene.shot_type}
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-400 text-[10px] flex items-center gap-1">
-                  <Camera className="w-2.5 h-2.5 text-neutral-500" />
-                  <span>{scene.camera_movement}</span>
-                </span>
-              </div>
-              <span className="text-neutral-500 font-mono text-[10px]">
-                {scene.duration_sec}s
-              </span>
-            </div>
-
-            <p className="text-neutral-300 text-xs leading-relaxed">
-              {scene.prompt}
-            </p>
-
-            {scene.audio_cue && (
-              <div className="text-[10px] text-amber-400/90 flex items-center gap-1 bg-amber-950/20 px-2 py-0.5 rounded border border-amber-500/20 w-fit">
-                <Sparkles className="w-2.5 h-2.5" />
-                <span>声效对齐：{scene.audio_cue}</span>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {/* 微调备注文案回显 */}
-        {card.steering_notes && (
-          <div className="p-2 rounded bg-neutral-950 border border-neutral-800 text-[11px] text-neutral-400">
-            <span className="text-blue-400 font-medium">导演微调意见：</span>
-            <span>{card.steering_notes}</span>
-          </div>
-        )}
-
-        {/* 编辑微调输入区 */}
-        {isEditing && !isConfirmed && (
-          <div className="p-2 rounded bg-neutral-950 border border-blue-500/30 space-y-1.5">
-            <label className="text-[11px] text-neutral-300 font-medium block">
-              输入分镜微调指令 (将作为前置设定注入)：
-            </label>
-            <input
-              type="text"
-              value={steeringText}
-              onChange={(e) => setSteeringText(e.target.value)}
-              placeholder="例如：将镜头 2 的眼部特写调整为双色霓虹反光，时长拉长到 5 秒..."
-              className="w-full px-2.5 py-1.5 text-xs bg-neutral-900 border border-neutral-700 rounded text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* 底部决策操作区 */}
-      <div className="px-3 py-2 bg-neutral-950 border-t border-neutral-800/80 flex items-center justify-between shrink-0">
-        <span className="text-[11px] text-neutral-500">
-          {isConfirmed ? '分镜已绑定状态机，可随时在右侧检视' : '确认后将启动 Diffusion / 神经渲染管线'}
-        </span>
-
-        <div className="flex items-center gap-2">
-          {!isConfirmed ? (
-            <>
-              <button
-                onClick={handleToggleEdit}
-                className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 transition-colors"
-              >
-                <SlidersHorizontal className="w-3 h-3 text-neutral-400" />
-                <span>{isEditing ? '取消修改' : '微调分镜'}</span>
-              </button>
-              <button
-                onClick={handleConfirmAll}
-                className="flex items-center gap-1 text-[11px] px-3 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium shadow-sm transition-colors"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>拍板推进</span>
-              </button>
-            </>
-          ) : (
             <button
-              onClick={() => onResolve({ ...card, status: 'pending' })}
-              className="text-[11px] text-neutral-400 hover:text-neutral-200 underline transition-colors"
+              onClick={handleToggleEdit}
+              className={`p-1 rounded text-neutral-400 hover:text-neutral-200 transition-colors ${
+                isEditing ? 'bg-neutral-800 text-blue-400' : ''
+              }`}
+              title="调整微调切轨"
             >
-              重新调整
+              <SlidersHorizontal className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       </div>
+
+      {/* 分镜列表展示区 (纵向滚动) */}
+      <div className="p-3 overflow-y-auto space-y-2 flex-1 min-h-0 text-xs">
+        {card.scenes.map((scene: StoryboardScene) => {
+          const status = scene.status || 'Pending';
+          const isBattle = status === 'BattleActive';
+          const isApproved = status === 'Approved';
+          const isRejected = status === 'Rejected';
+
+          return (
+            <div
+              key={scene.id}
+              className="p-2.5 rounded-lg border border-neutral-800 bg-neutral-950/60 hover:border-neutral-700/80 transition-all flex flex-col gap-1.5"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-blue-400">#{scene.scene_num}</span>
+                  <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 text-[10px]">
+                    {scene.shot_type}
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded bg-neutral-800/80 text-neutral-400 text-[10px] flex items-center gap-1">
+                    <Camera className="w-2.5 h-2.5" />
+                    <span>{scene.camera_movement}</span>
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 text-[10px]">
+                  <span className="font-mono text-neutral-400">{scene.duration_sec}s</span>
+
+                  {/* 黑板状态徽标与竞技场入口 */}
+                  {isApproved && (
+                    <span className="flex items-center gap-0.5 text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                      <CheckCircle2 className="w-3 h-3" />
+                      质检合格
+                    </span>
+                  )}
+                  {isBattle && (
+                    <span className="flex items-center gap-0.5 text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-500/30">
+                      <Swords className="w-3 h-3" />
+                      对决中
+                    </span>
+                  )}
+                  {isRejected && (
+                    <span className="flex items-center gap-0.5 text-rose-400 bg-rose-950/60 px-1.5 py-0.5 rounded border border-rose-500/30">
+                      <AlertTriangle className="w-3 h-3" />
+                      需人工复审
+                    </span>
+                  )}
+
+                  {onTriggerBattle && !isBattle && (
+                    <button
+                      onClick={() => onTriggerBattle(scene.id)}
+                      className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-colors"
+                      title="开启 Battle Mode 变体竞技场盲测"
+                    >
+                      <Swords className="w-2.5 h-2.5" />
+                      <span>对决</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* 画面提示词 */}
+              <p className="text-neutral-300 text-[11px] leading-relaxed line-clamp-2">
+                {scene.prompt}
+              </p>
+
+              {/* 音频/台词线索 */}
+              {scene.audio_cue && (
+                <div className="text-[10px] text-neutral-400 flex items-center gap-1">
+                  <span className="text-neutral-500">音频指引:</span>
+                  <span className="italic">{scene.audio_cue}</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 动态切轨微调输入区域 */}
+      {isEditing && !isConfirmed && (
+        <div className="p-3 bg-neutral-950/90 border-t border-neutral-800 shrink-0">
+          <label className="block text-[11px] font-medium text-blue-300 mb-1 flex items-center gap-1">
+            <Sparkles className="w-3 h-3" />
+            <span>向编排引擎注入切轨指令 (TurnSteer)：</span>
+          </label>
+          <input
+            type="text"
+            value={steeringText}
+            onChange={(e) => setSteeringText(e.target.value)}
+            placeholder="例如：将第二镜视角改为极度俯瞰，整体光线调暗..."
+            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-2.5 py-1.5 text-xs text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-blue-500"
+          />
+        </div>
+      )}
+
+      {/* 卡片底部操作栏 */}
+      {!isConfirmed && (
+        <div className="px-3.5 py-2 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between shrink-0">
+          <span className="text-[10px] text-neutral-500">
+            按需微调后，确认分镜将由黑板并发驱动媒体管线
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleConfirmAll}
+              className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium flex items-center gap-1.5 shadow transition-colors"
+            >
+              <CheckCircle2 className="w-3 h-3" />
+              <span>确认分镜编排</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,13 +1,19 @@
 import React from 'react';
-import { useStudioStore } from '@/stores/useStudioStore';
+import { useStudioStore, type ArtifactTabType } from '@/stores/useStudioStore';
 import { VisualAssetViewer } from './VisualAssetViewer';
 import { ProceduralAudioPlayer } from './ProceduralAudioPlayer';
 import { CapCutExporterCard } from './CapCutExporterCard';
+import { BlackboardViewer } from './BlackboardViewer';
+import { FalserAuditViewer } from './FalserAuditViewer';
+import { AestheticMemoryViewer } from './AestheticMemoryViewer';
 import {
   Layers,
   Film,
   Music,
   FileVideo,
+  LayoutDashboard,
+  ShieldCheck,
+  BrainCircuit,
   X,
 } from 'lucide-react';
 
@@ -32,6 +38,15 @@ export const ArtifactsDrawer: React.FC<ArtifactsDrawerProps> = ({ width }) => {
   const visualCount = assets.filter((a) => a.media_type === 'video' || a.media_type === 'image').length;
   const audioCount = assets.filter((a) => a.media_type === 'audio').length;
 
+  const tabs: { id: ArtifactTabType; label: string; icon: React.ReactNode; badge?: number }[] = [
+    { id: 'visual', label: '分镜', icon: <Film className="w-3 h-3 text-blue-400" />, badge: visualCount },
+    { id: 'audio', label: '音效', icon: <Music className="w-3 h-3 text-amber-400" />, badge: audioCount },
+    { id: 'capcut', label: '剪映', icon: <FileVideo className="w-3 h-3 text-purple-400" /> },
+    { id: 'blackboard', label: '黑板', icon: <LayoutDashboard className="w-3 h-3 text-cyan-400" /> },
+    { id: 'falser', label: '证伪', icon: <ShieldCheck className="w-3 h-3 text-emerald-400" /> },
+    { id: 'memories', label: '记忆', icon: <BrainCircuit className="w-3 h-3 text-purple-400" /> },
+  ];
+
   return (
     <aside
       style={{ width }}
@@ -55,49 +70,30 @@ export const ArtifactsDrawer: React.FC<ArtifactsDrawerProps> = ({ width }) => {
         </button>
       </div>
 
-      {/* Tab 导航切换 */}
-      <div className="flex items-center border-b border-neutral-800 bg-neutral-950 px-2 pt-2 gap-1 select-none">
-        <button
-          onClick={() => setActiveArtifactTab('visual')}
-          className={`flex-1 py-1.5 px-2 rounded-t-md text-xs font-medium flex items-center justify-center gap-1.5 border-b-2 transition-colors ${
-            activeArtifactTab === 'visual'
-              ? 'border-blue-500 text-neutral-100 bg-neutral-900/60'
-              : 'border-transparent text-neutral-400 hover:text-neutral-200'
-          }`}
-        >
-          <Film className="w-3 h-3 text-blue-400" />
-          <span>分镜视觉</span>
-          <span className="text-[10px] px-1 rounded-full bg-neutral-800 text-neutral-400 font-mono">
-            {visualCount}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveArtifactTab('audio')}
-          className={`flex-1 py-1.5 px-2 rounded-t-md text-xs font-medium flex items-center justify-center gap-1.5 border-b-2 transition-colors ${
-            activeArtifactTab === 'audio'
-              ? 'border-amber-500 text-neutral-100 bg-neutral-900/60'
-              : 'border-transparent text-neutral-400 hover:text-neutral-200'
-          }`}
-        >
-          <Music className="w-3 h-3 text-amber-400" />
-          <span>免版税音效</span>
-          <span className="text-[10px] px-1 rounded-full bg-neutral-800 text-neutral-400 font-mono">
-            {audioCount}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveArtifactTab('capcut')}
-          className={`flex-1 py-1.5 px-2 rounded-t-md text-xs font-medium flex items-center justify-center gap-1.5 border-b-2 transition-colors ${
-            activeArtifactTab === 'capcut'
-              ? 'border-purple-500 text-neutral-100 bg-neutral-900/60'
-              : 'border-transparent text-neutral-400 hover:text-neutral-200'
-          }`}
-        >
-          <FileVideo className="w-3 h-3 text-purple-400" />
-          <span>剪映 Pro</span>
-        </button>
+      {/* Tab 导航切换（包含阶段四黑板、证伪、记忆） */}
+      <div className="flex items-center border-b border-neutral-800 bg-neutral-950 px-1 pt-1.5 gap-0.5 select-none overflow-x-auto">
+        {tabs.map((tab) => {
+          const isActive = activeArtifactTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveArtifactTab(tab.id)}
+              className={`flex-1 py-1 px-1.5 rounded-t-md text-[11px] font-medium flex items-center justify-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
+                isActive
+                  ? 'border-blue-500 text-neutral-100 bg-neutral-900/60'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-200'
+              }`}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+              {typeof tab.badge === 'number' && (
+                <span className="text-[9px] px-1 rounded-full bg-neutral-800 text-neutral-400 font-mono">
+                  {tab.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* 产物内容滚动区 */}
@@ -125,6 +121,12 @@ export const ArtifactsDrawer: React.FC<ArtifactsDrawerProps> = ({ width }) => {
             onExport={exportCapCut}
           />
         )}
+
+        {activeArtifactTab === 'blackboard' && <BlackboardViewer />}
+
+        {activeArtifactTab === 'falser' && <FalserAuditViewer />}
+
+        {activeArtifactTab === 'memories' && <AestheticMemoryViewer />}
       </div>
 
       {/* 底部零拷贝协议提示 */}

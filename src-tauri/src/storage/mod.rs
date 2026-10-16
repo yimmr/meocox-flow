@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use rusqlite::{params, Connection};
 use crate::orchestrator::types::{AssetId, AssetMetadata, CheckpointRecord};
+use crate::orchestrator::memory::AestheticMemoryRecord;
 
 pub struct StorageManager {
     db_path: PathBuf,
@@ -28,7 +29,7 @@ impl StorageManager {
         )
         .map_err(|e| format!("Failed to set WAL pragma: {e}"))?;
 
-        // 初始化核心表结构
+        // 初始化核心表结构（包含阶段四审美记忆表）
         conn.execute_batch(
             "CREATE TABLE IF NOT EXISTS assets (
                 asset_id TEXT PRIMARY KEY,
@@ -44,6 +45,14 @@ impl StorageManager {
                 step_name TEXT NOT NULL,
                 state_json TEXT NOT NULL,
                 created_at INTEGER NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS aesthetic_memories (
+                id TEXT PRIMARY KEY,
+                category TEXT NOT NULL,
+                preference TEXT NOT NULL,
+                confidence REAL NOT NULL,
+                evidence TEXT NOT NULL,
+                created_at REAL NOT NULL
             );",
         )
         .map_err(|e| format!("Failed to initialize schema: {e}"))?;
@@ -153,6 +162,56 @@ impl StorageManager {
                     step_name,
                     state_json,
                     created_at,
+                })
+            })
+            .map_err(|e| format!("Query map failed: {e}"))?;
+
+        let mut result = Vec::new();
+        for r in rows {
+            let item = r.map_err(|e| format!("Row parse error: {e}"))?;
+            result.push(item);
+        }
+        Ok(result)
+    }
+
+    pub fn insert_aesthetic_memory(&self, memory: &AestheticMemoryRecord) -> Result<(), String> {
+        let conn = self.conn.lock().map_err(|e| format!("Mutex lock error: {e}"))?;
+        conn.execute(
+            "INSERT INTO aesthetic_memories (id, category, preference, confidence, evidence, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+             ON CONFLICT(id) DO UPDATE SET
+                category=excluded.category,
+                preference=excluded.preference,
+                confidence=excluded.confidence,
+                evidence=excluded.evidence;",
+            params![
+                memory.id,
+                memory.category,
+                memory.preference,
+                memory.confidence,
+                memory.evidence,
+                memory.created_at,
+            ],
+        )
+        .map_err(|e| format!("Failed to insert aesthetic memory: {e}"))?;
+        Ok(())
+    }
+
+    pub fn list_aesthetic_memories(&self) -> Result<Vec<AestheticMemoryRecord>, String> {
+        let conn = self.conn.lock().map_err(|e| format!("Mutex lock error: {e}"))?;
+        let mut stmt = conn
+            .prepare("SELECT id, category, preference, confidence, evidence, created_at FROM aesthetic_memories ORDER BY created_at DESC")
+            .map_err(|e| format!("Prepare query failed: {e}"))?;
+
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(AestheticMemoryRecord {
+                    id: row.get(0)?,
+                    category: row.get(1)?,
+                    preference: row.get(2)?,
+                    confidence: row.get(3)?,
+                    evidence: row.get(4)?,
+                    created_at: row.get(5)?,
                 })
             })
             .map_err(|e| format!("Query map failed: {e}"))?;

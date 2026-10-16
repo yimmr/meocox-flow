@@ -1,17 +1,26 @@
-import { type QuotaEstimate, type CheckpointRecord, type AssetMetadata } from '@/bindings';
+import {
+  type QuotaEstimate,
+  type CheckpointRecord,
+  type AssetMetadata,
+  type BattleBranch,
+  type SceneStatus,
+} from '@/bindings';
 
 /**
- * 分镜镜头单元
+ * 分镜镜头单元（与 Rust 黑板 StoryboardSceneNode 对齐）
  */
 export interface StoryboardScene {
   id: string;
   scene_num: number;
-  shot_type: '特写 (Close-Up)' | '中景 (Medium)' | '全景 (Wide)' | '俯瞰 (Bird-Eye)';
-  camera_movement: '推镜 (Push-In)' | '摇镜 (Pan)' | '移镜 (Tracking)' | '静止 (Static)';
+  shot_type: string;
+  camera_movement: string;
   prompt: string;
   duration_sec: number;
   preview_asset_id?: string;
   audio_cue?: string;
+  status?: SceneStatus;
+  retry_count?: number;
+  falser_score?: number;
 }
 
 /**
@@ -68,13 +77,27 @@ export interface CheckpointCardPayload {
 }
 
 /**
+ * 变体竞技场对决卡片数据 (A2UI Battle Card)
+ */
+export interface BattleCardPayload {
+  type: 'battle_arena';
+  scene_id: string;
+  scene_num: number;
+  prompt: string;
+  branches: BattleBranch[];
+  winner_branch_id?: string;
+  status: 'pending' | 'resolved';
+}
+
+/**
  * 声明式 A2UI 卡片联合类型
  */
 export type DirectorCardData =
   | StoryboardCardPayload
   | StyleCardPayload
   | QuotaCardPayload
-  | CheckpointCardPayload;
+  | CheckpointCardPayload
+  | BattleCardPayload;
 
 /**
  * 导演主对话流消息

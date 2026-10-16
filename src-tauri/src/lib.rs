@@ -10,8 +10,11 @@ use tauri::{Manager, RunEvent};
 use tauri_specta::{collect_commands, Builder};
 
 use daemon::{
-    estimate_quota, export_capcut_project, generate_procedural_sound, list_assets,
-    list_studio_checkpoints, ping_daemon_status, register_local_asset, save_studio_checkpoint,
+    distill_and_save_aesthetic_memory, estimate_quota, export_capcut_project,
+    generate_procedural_sound, get_blackboard_state, inject_turn_steer_frame, list_assets,
+    list_aesthetic_memories, list_skill_indexes, list_studio_checkpoints, load_skill_content,
+    orchestrate_storyboard, ping_daemon_status, register_local_asset, resolve_battle_winner,
+    save_studio_checkpoint, start_battle_mode, start_pipeline_execution, verify_scene_continuity,
     DaemonState,
 };
 use storage::StorageManager;
@@ -27,6 +30,17 @@ fn create_specta_builder() -> Builder<tauri::Wry> {
             estimate_quota,
             save_studio_checkpoint,
             list_studio_checkpoints,
+            get_blackboard_state,
+            orchestrate_storyboard,
+            start_pipeline_execution,
+            inject_turn_steer_frame,
+            start_battle_mode,
+            resolve_battle_winner,
+            verify_scene_continuity,
+            list_skill_indexes,
+            load_skill_content,
+            list_aesthetic_memories,
+            distill_and_save_aesthetic_memory,
         ])
 }
 
@@ -92,14 +106,7 @@ mod tests {
 
     #[test]
     fn export_bindings() {
-        let specta_builder = Builder::<tauri::Wry>::new()
-            .commands(collect_commands![
-                ping_daemon_status,
-                register_local_asset,
-                list_assets,
-            ]);
-
-        specta_builder
+        create_specta_builder()
             .export(
                 specta_typescript::Typescript::default(),
                 "../src/bindings/index.ts",
