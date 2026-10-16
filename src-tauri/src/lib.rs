@@ -47,7 +47,9 @@ fn create_specta_builder() -> Builder<tauri::Wry> {
 pub fn export_ts_bindings() {
     create_specta_builder()
         .export(
-            specta_typescript::Typescript::default().header("// @ts-nocheck\n"),
+            specta_typescript::Typescript::default()
+                .header("// @ts-nocheck\n")
+                .bigint(specta_typescript::BigIntExportBehavior::Number),
             "../src/bindings/index.ts",
         )
         .expect("Failed to export typescript bindings");
@@ -108,7 +110,9 @@ mod tests {
     fn export_bindings() {
         create_specta_builder()
             .export(
-                specta_typescript::Typescript::default(),
+                specta_typescript::Typescript::default()
+                    .header("// @ts-nocheck\n")
+                    .bigint(specta_typescript::BigIntExportBehavior::Number),
                 "../src/bindings/index.ts",
             )
             .expect("Failed to export typescript bindings");

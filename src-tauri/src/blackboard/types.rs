@@ -9,7 +9,7 @@ pub struct CharacterAnchor {
     pub name: String,
     pub description: String,
     pub anchor_asset_id: Option<AssetId>,
-    pub seed: u64,
+    pub seed: u32,
     pub prompt_modifiers: Vec<String>,
 }
 
@@ -106,15 +106,15 @@ pub struct TimelineClip {
     pub scene_id: String,
     pub asset_id: AssetId,
     pub track_type: String, // "video" | "voice" | "sfx" | "bgm"
-    pub start_time_ms: u64,
-    pub duration_ms: u64,
+    pub start_time_ms: f64,
+    pub duration_ms: f64,
 }
 
 /// 多轨时间轴
 #[derive(Debug, Clone, Serialize, Deserialize, Type, Default)]
 pub struct MultiTrackTimeline {
     pub clips: Vec<TimelineClip>,
-    pub total_duration_ms: u64,
+    pub total_duration_ms: f64,
 }
 
 /// 知觉证伪探针校验结果
