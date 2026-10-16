@@ -1,0 +1,34 @@
+{
+  "$schema": "https://antigravity.google/schemas/hooks-v1.json",
+  "description": "React + Tauri v2 + Rust 桌面端 AIGC 智能体研发安全与编译器门禁钩子（兼顾旧项目重构防污染）",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "if": "run_command(*rm -rf*)|run_command(*del /s*)|run_command(*git push --force*)",
+        "action": "block",
+        "reason": "[Architecture Guard] 严禁执行破坏性递归删除或强制覆盖远端历史命令。"
+      },
+      {
+        "matcher": "write_to_file|edit_file|replace_file_content",
+        "if": "*raw_assets*|*.env.production*",
+        "action": "block",
+        "reason": "[Raw Asset & Secret Guard] 违反原始素材物理只读防线或生产环境密钥隔离规范。"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "write_to_file|edit_file|replace_file_content",
+        "if": "*src-tauri/*.rs",
+        "action": "Inform",
+        "message": "[Rust Compiler & Arch Guard] 检测到 Rust 源码变更。特别提示（旧代码迁移防护）：请运行 `python scripts/arch_guard.py`（或 `node scripts/arch_guard.mjs`）拦截旧代码渗入的 std::fs 阻塞、std::thread::sleep 与裸 unwrap；并运行 `cargo check --manifest-path src-tauri/Cargo.toml` 验证强类型契约。"
+      },
+      {
+        "matcher": "write_to_file|edit_file|replace_file_content",
+        "if": "*src/*.ts|*src/*.tsx",
+        "action": "Inform",
+        "message": "[TypeScript & GenUI Arch Guard] 检测到前端代码变更。特别提示（旧代码迁移防护）：请运行 `python scripts/arch_guard.py`（或 `node scripts/arch_guard.mjs`）扫描红线，拦截旧代码残留的 Base64 传递与裸 any；确保 GenUI 内嵌卡片 <=500px，并运行 `pnpm tsc --noEmit`。"
+      }
+    ]
+  }
+}

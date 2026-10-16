@@ -59,6 +59,7 @@ server/data/
 data/curated_mixkit.json
 *.tmp
 *.tmp.*
+.flow/
 
 # IDE & OS files
 .DS_Store

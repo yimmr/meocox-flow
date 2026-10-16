@@ -1,0 +1,11 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schema/mcp_config.json",
+  "mcpServers": {
+    "sqlite-inspector": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sqlite", "--db-path", "./.aigc_workspace/project_state.db"],
+      "disabled": true,
+      "description": "开发期辅助调试工具：按需启用以直接探查单项目 SQLite 状态库与时间轴快照表"
+    }
+  }
+}

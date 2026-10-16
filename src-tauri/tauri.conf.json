@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "identifier": "com.meocox.flow",
   "build": {
-    "frontendDist": "../client/dist",
+    "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "npm run dev:web",
-    "beforeBuildCommand": "npm run build:backend && npm --prefix client run build"
+    "beforeDevCommand": "pnpm run dev:ui",
+    "beforeBuildCommand": "pnpm run build"
   },
   "app": {
     "windows": [
@@ -30,9 +30,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "externalBin": [
-      "binaries/meocox-backend"
-    ],
+    "externalBin": [],
     "resources": [
       "resources/agents",
       "resources/skills",
