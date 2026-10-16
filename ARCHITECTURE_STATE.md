@@ -13,8 +13,14 @@
   - [x] GEM-01 移植：将旧项目 `jianying.js`（CapCut 专业版草稿引擎）清洗重构为 Rust 确定性批处理工具 (已完成)
   - [x] GEM-02 移植：将旧项目 `proceduralAudioService.js`（PCM 程序化音效合成）重构为 Rust 原生免版税音效生成器 (已完成)
   - [x] 安全防线落地：在 Tauri FS Scope 中锁定用户原始素材只读防线（Raw Asset Immutability），并建立 Quota Guardian 算力预算守卫与 `interrupt()` 挂起状态机 (已完成)
-- [ ] **阶段三：导演控制平面（双栏画布、三级介入模态、TurnSteer 动态切轨与 A2UI 参数推导卡）** ⬅️ *当前准备进入此阶段*
-- [ ] **阶段四：工业级多智能体壁垒（剧组共享黑板、Continuity Falser 连贯性证伪者、变体竞技场与渐进式生态）**
+- [x] **阶段三：导演控制平面（恢复三栏 Codex 控制台、A2UI 声明式卡片、TurnSteer 动态切轨与多模态产物画板）** 🏁 *已全量达成*
+  - [x] 废弃 React Flow 节点图，全面恢复【左栏项目资产池 + 中栏导演指挥流 + 右栏自适应产物抽屉】经典三栏布局 (已完成)
+  - [x] 底层全量对接阶段一/二 Rust 核心，全面采用 React 19 + TypeScript 纯净架构，数据流彻底绑定 `src/bindings/` 强类型契约与 `asset://` 零拷贝协议 (已完成)
+  - [x] 落地三大类 Codex 导演交互能力：
+    - [x] 对话内嵌声明式卡片 (A2UI <= 500px)：`StoryboardConfirmCard`、`StyleSelectorCard`、`QuotaApprovalCard`、`CheckpointRecoveryCard` (已完成)
+    - [x] 右侧 Codex 风格产物预览画板 (Artifacts Drawer)：分镜视觉资产 `asset://` 预览、16-bit PCM 原生音效播放器 (`ProceduralAudio`) 与剪映 Pro 草稿一键导出 (`CapCutDraftExporter`) (已完成)
+    - [x] 生成中途动态切轨 (TurnSteer)：输入框运行态无损切轨控制帧注入与状态机检查点联动 (已完成)
+- [ ] **阶段四：工业级多智能体壁垒（剧组共享黑板、Continuity Falser 连贯性证伪者、变体竞技场与渐进式生态）** ⬅️ *下一阶段准备进入*
 
 ## 二、 核心数据契约登记表（已落地的全局类型与表结构）
 
@@ -29,7 +35,10 @@
 | `Checkpointer` (时光机) | `src-tauri/src/storage/mod.rs` | 已落地 | 单项目 SQLite WAL 检查点持久化快照，支持无损回滚与分叉 |
 | `DaemonState` | `src-tauri/src/daemon/mod.rs` & `src-tauri/src/lib.rs` | 已落地 | 拦截 `RunEvent::ExitRequested`，常驻后台伪守护 |
 | `StorageManager` (WAL) | `src-tauri/src/storage/mod.rs` | 已落地 | 单项目 `.flow/project.db`，SQLite WAL 模式存储媒体元数据与检查点 |
-| `LivingCanvas & ControlStream` | `src/components/canvas/` & `src/components/control-stream/` | 已落地 | 双栏 ReactFlow DAG 画布 + `asset://` 零拷贝流式媒体池 + TurnSteer 输入卡 |
+| `DirectorWorkspace` | `src/components/director/DirectorWorkspace.tsx` | 已落地 | 经典三栏 Codex 风格控制台，连接资产抽屉、对话流与产物画板 |
+| `A2UI Declarative Cards` | `src/components/gen-ui/` | 已落地 | 严格遵守 <=500px 高度预算的分镜确认卡、风格选择卡、算力审批卡、时光机卡 |
+| `Multimodal Artifacts Drawer` | `src/components/artifacts/` | 已落地 | 多模态产物画板：视觉资产 `asset://` 零拷贝预览 + PCM 音效试听 + 剪映草稿装配 |
+| `TurnSteer Controller` | `src/components/director/TurnSteerInputBar.tsx` | 已落地 | 运行态无损切轨输入中枢，支持保全前序分镜并平滑切轨 |
 | `LegacyRefactorPlan` | `REFACTOR_PLAN.md` | 已就绪 | 由 `legacy-spec-miner` 扫描产出（坚决拍板路径 B 净室剥离移植） |
 | `FeatureSpecTemplate` | `docs/specs/00_feature_spec_template.md` | 已就绪 | Step 0 新特性动工与旧模块重构契约对齐模板 |
 | `ArchGuard` | `scripts/arch_guard.py` & `.mjs` | 已就绪 | 静态红线秒级检查哨兵（防止旧代码反模式渗透，当前 0 违规） |
@@ -42,4 +51,6 @@
 - **ADR-004（旧项目演进重构与防污染策略）**：引入 `legacy-spec-miner` 在独立只读上下文中清查旧代码（严禁污染主脑上下文）；确立绞杀榕（Strangler Fig）与净室剥离（Clean-Room）双轨重构路径；每次改动由 `arch_guard` 物理阻断旧代码病灶渗入。
 - **ADR-005（重构路径正式拍板：净室剥离移植）**：经人类决策拍板，弃用同技术栈修补的“绞杀榕”方案，全面采纳【路径 B：净室剥离移植 (Clean-Room Extraction)】。先调用 `00-bootstrap-project.md` 立起纯净的 `Tauri v2 + Rust (tokio) + React 19 + TypeScript` 原生底座与 `AssetId` (UUIDv7) 强类型契约，再将旧库中的 8 类自包含高价值资产（Prompt、SOP、CapCut JSON 算法、PCM 合成等）清洗后逐一迁入。
 - **ADR-006（阶段二可靠工程底座与批处理媒体管线落地）**：将旧代码中分散的 PCM 音效（GEM-02）移植为 Rust 零依赖原生算法（`pipeline/procedural_audio.rs`）；将剪映 CapCut Pro 导出（GEM-01）移植为 Rust 确定性批处理引擎（`pipeline/capcut.rs`）；落地 Quota Guardian 算力预算守卫（`sandbox/quota.rs`），超出阈值自动触发零资源挂起门禁；落地非线性时间轴时光机（`storage/mod.rs`），基于 SQLite WAL 与 UUIDv7 实现无损检查点快照；原始素材锁定只读，生成物完全隔离于 `.flow/derived/`。
+- **ADR-007（阶段三导演控制平面前端重构与三大 Codex 交互能力落地）**：废弃拖拽节点图，全面恢复【左侧项目资产库 + 中间主对话流 + 右侧自适应产物抽屉】的三栏 VS Code / 类 Codex 核心交互形态；全量换芯对接阶段一/二 Rust 后端，组件 100% 采用 React 19 + TypeScript 净室编写；落地四大 A2UI 声明式卡片（分镜确认、风格选择、预算拦截与时光机回滚，严格遵守 <=500px 高度预算）；落地右侧多模态产物预览画板（`asset://` 零拷贝图片/视频渲染、16-bit PCM 原生免版税音效试听播放器与一键剪映 Pro 工程导出）；落地生成中途 TurnSteer 动态切轨输入中枢，实现后台任务不中断、已生成资产 100% 保全与控制帧注入。
+
 
